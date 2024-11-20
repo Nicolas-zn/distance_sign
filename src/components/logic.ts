@@ -42,8 +42,7 @@ export const add_cylinder = (scene: Scene) => {
     const face = create_face(points)
     scene.add(face)
     const center_line = create_center_line(centerPoints)
-    scene.add(center_line)
-    return cylinderGroup
+    return { cylinderGroup, center_line }
 }
 
 //基座
@@ -162,23 +161,7 @@ function create_center_line(centerPoints: Vector3[]) {
     // throw new Error("Function not implemented.");
     console.log(centerPoints);
     const curve = new LineCurve3(centerPoints[0], centerPoints[1])
-    const start = curve.getPointAt(0)
-    const end = curve.getPointAt(1)
-    const some_p = curve.getPointAt(0.4)
-    let group = new Group()
-    function addBox(p: Vector3) {
-        const boxG = new BoxGeometry(3, 3, 3)
-        const material = new MeshBasicMaterial({
-            color: 'red'
-        })
-        const mesh = new Mesh(boxG, material)
-        mesh.position.copy(p)
-        return mesh
-    }
-    let b = addBox(start)
-    group.add(b)
-    group.add(addBox(end))
-    group.add(addBox(some_p))
-    return group
+    return curve
+
 }
 
