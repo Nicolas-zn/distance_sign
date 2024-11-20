@@ -27,15 +27,28 @@ let init_scene = async () => {
   controls.update();
 
   transformControl = new TransformControls(camera, renderer.domElement)
-  transformControl.addEventListener('change', render);
+  // transformControl.addEventListener('change', render);
+  // transformControl.size = 150
+
   transformControl.addEventListener('dragging-changed', function (event) {
     controls.enabled = !event.value;
   });
+  transformControl.setSize(0.5)
   transformControl.setMode('translate')
+  transformControl.setSpace('local')
   transformControl.axis = "X"
   transformControl.showX = true
-  transformControl.showY = true
-  transformControl.showZ = true
+  transformControl.showY = false
+  transformControl.showZ = false
+
+  // const arrowLength = 50;
+  // const arrowColor = 0xff0000;  // 红色
+  // const direction = new Vector3(1, 0, 0); // 指向 X 轴正方向
+  // const origin = new Vector3(0, 0, 0);   // 箭头起点
+  // const arrowHelper = new ArrowHelper(direction, origin, arrowLength, arrowColor);
+  // scene.add(arrowHelper);
+
+
   let light = new DirectionalLight(0xffffff, 0.25);
   light.position.setScalar(1);
   scene.add(light, new AmbientLight(0xffffff, 0.75));
@@ -71,8 +84,14 @@ const test = (curve: LineCurve3) => {
   scene.add(addBox(start))
   scene.add(addBox(end))
   let controlBox = addBox(some_p)
+  console.log('controlBox', controlBox);
+
   scene.add(controlBox)
+  console.log(transformControl);
+
   transformControl.attach(controlBox)
+
+  scene.add(transformControl)
 }
 
 
