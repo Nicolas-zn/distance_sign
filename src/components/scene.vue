@@ -5,24 +5,32 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const three = ref()
 const renderer2D = new CSS2DRenderer();
-renderer2D.setSize(window.innerWidth, window.innerHeight);
+
 let scene: Scene,
   camera: PerspectiveCamera,
   renderer: WebGLRenderer,
   transformControl: TransformControls,
   controls: OrbitControls;
 let init_scene = async () => {
+  const dom = three.value as HTMLDivElement
+  const width = dom.clientWidth
+  const height = dom.clientHeight
   scene = new Scene();
   scene.background = new Color('rgb(238,240,243)')
-  camera = new PerspectiveCamera(60, innerWidth / innerHeight, 1, 1000);
+  camera = new PerspectiveCamera(60, width / height, 1, 1000);
   camera.position.set(0, 0, 230)
   renderer = new WebGLRenderer({ antialias: true });
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(width, height);
   three.value.appendChild(renderer.domElement);
   window.addEventListener("resize", () => {
-    camera.aspect = innerWidth / innerHeight;
+    const dom = three.value as HTMLDivElement
+    const width = dom.clientWidth
+    const height = dom.clientHeight
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
+    renderer2D.setSize(width, height);
+
+    renderer.setSize(width, height);
   });
   controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 0, 0);
@@ -33,8 +41,6 @@ let init_scene = async () => {
   // transformControl.size = 150
 
   transformControl.addEventListener('dragging-changed', function (event) {
-    console.log(event);
-
     controls.enabled = !event.value;
   });
   transformControl.setSize(0.5)
@@ -57,6 +63,7 @@ let init_scene = async () => {
   light.position.setScalar(1);
   scene.add(light, new AmbientLight(0xffffff, 0.75));
   // add_helper();
+  renderer2D.setSize(width, height);
   renderer2D.domElement.style.top = '0px'
   renderer2D.domElement.style.left = '0px'
   renderer2D.domElement.style.pointerEvents = 'none'
@@ -69,13 +76,17 @@ onMounted(() => {
   render()
 })
 import Experience from './Experience';
+let experience: Experience
 const logic = () => {
-  const experience = new Experience(scene)
+  experience = new Experience(scene)
   transformControl.attach(experience.controlBox)
-
   transformControl.addEventListener('change', function () {
-    experience.change_medium_line()
+    let number = experience.change_medium_line()
+    slider_value.value = number
   })
+  experience.cut_face.visible = show_cut_face.value
+  experience.cut_face_deep.visible = show_cut_face.value
+
   scene.add(transformControl)
 }
 
@@ -90,16 +101,82 @@ onBeforeUnmount(() => {
 });
 
 
+let show_cut_face = ref(false), slider_value = ref(100)
+const change_cut_face = () => {
+  experience.cut_face.visible = show_cut_face.value
+  experience.cut_face_deep.visible = show_cut_face.value
+}
+const slider_change = () => {
+  experience.change_medium_line(slider_value.value)
+}
 </script>
 
 <template>
-  <div class="three-container" ref="three">
+  <div class="container">
+    <div class="three-container" ref="three">
+    </div>
+    <div class="right">
+      <div class="info-panel">
+        <div class="cut-face-con">
+          <span>横截面显示</span>
+          <el-checkbox style="margin-left: 10px;" v-model="show_cut_face" size="large" @change="change_cut_face()" />
+        </div>
+        <div class="slider-con">
+          <span style="width: 10%;">Xb</span>
+          <div style="width: 80%;">
+            <el-slider v-model="slider_value" show-input @input="slider_change()" />
+          </div>
 
+        </div>
+        <div class="echart-con">echart</div>
+      </div>
+    </div>
   </div>
+
+
 </template>
 
 <style scoped>
+.container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
 .three-container {
   position: relative;
+  width: 70%;
+  background-color: rgb(238, 240, 243);
+
+}
+
+.right {
+  width: 30%;
+  background-color: rgb(238, 240, 243);
+  display: grid;
+  place-items: center;
+}
+
+.info-panel {
+  height: 95%;
+  width: 95%;
+  border: 1px solid black;
+  color: black;
+  border-radius: 15px;
+  background-color: rgb(226, 245, 248);
+  display: grid;
+  grid-template-rows: 10% 15% 1fr;
+}
+
+.cut-face-con {
+  display: flex;
+  align-items: center;
+  padding-left: 5%;
+}
+
+.slider-con {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

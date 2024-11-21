@@ -16,6 +16,8 @@ export default class Experience {
     medium_line!: Line;
     left_len!: CSS2DObject;
     right_len!: CSS2DObject;
+    cut_face!: Mesh;
+    cut_face_deep!: Mesh;
     constructor(scene: Scene, boxPoint?: number) {
         this.scene = scene
         this.boxPoint = boxPoint
@@ -24,6 +26,8 @@ export default class Experience {
         this.add_cut_face_line()
         // 横截面
         this.create_face()
+        // 深色面
+        this.create_face_deep()
         // 中线
         this.create_center_line()
         // 虚线的中间截断线
@@ -161,7 +165,6 @@ export default class Experience {
         this.scene.add(group)
     }
     create_face() {
-
         const new_v2Arr = this.cut_face_points.map(v3 => {
             return new Vector2(v3.x, v3.y)
         })
@@ -172,7 +175,45 @@ export default class Experience {
             transparent: true, opacity: 0.2, color: new Color('rgb(255,138,234)'), side: DoubleSide
         })
         const face = new Mesh(geometry, material)
+        this.cut_face = face
         this.scene.add(face)
+    }
+    create_face_deep() {
+        let deepArr = [
+            this.centerPoints.left_center.clone().add(new Vector3(0, this.radius, 0)),
+            this.centerPoints.left_center.clone().sub(new Vector3(0, this.radius, 0)),
+            new Vector3(0, -this.radius, 0),
+            new Vector3(0, this.radius, 0),
+        ]
+        const new_v2Arr = deepArr.map(v3 => {
+            return new Vector2(v3.x, v3.y)
+        })
+        const shape = new Shape(new_v2Arr)
+        shape.closePath()
+        const geometry = new ShapeGeometry(shape);
+        const material = new MeshBasicMaterial({
+            transparent: true, opacity: 0.5, color: new Color('rgb(255,0,234)'), side: DoubleSide
+        })
+        const face = new Mesh(geometry, material)
+        this.cut_face_deep = face
+        this.scene.add(face)
+    }
+    update_face_deep() {
+        let deepArr = [
+            this.centerPoints.left_center.clone().add(new Vector3(0, this.radius, 0)),
+            this.centerPoints.left_center.clone().sub(new Vector3(0, this.radius, 0)),
+            new Vector3(this.controlBox.position.x, -this.radius, 0),
+            new Vector3(this.controlBox.position.x, this.radius, 0),
+        ]
+        const new_v2Arr = deepArr.map(v3 => {
+            return new Vector2(v3.x, v3.y)
+        })
+        const shape = new Shape(new_v2Arr);
+        shape.closePath();
+        this.cut_face_deep.geometry.dispose();  // 先清除旧的几何体数据
+        const geometry = new ShapeGeometry(shape);  // 创建新的几何体
+        this.cut_face_deep.geometry = geometry;  // 更新 Mesh 的几何体
+
     }
     create_center_line() {
         const curve = new LineCurve3(this.centerPoints.left_center, this.centerPoints.right_center)
@@ -194,10 +235,19 @@ export default class Experience {
         this.scene.add(medium_line)
     }
 
-    change_medium_line() {
-        const newPos = new Vector3(this.controlBox.position.x, this.medium_line.position.y, this.medium_line.position.z)
+    change_medium_line(number?: number) {
+        let newPos: Vector3
+        if (number) {
+            let vectorx = number - 100
+            newPos = new Vector3(vectorx, this.medium_line.position.y, this.medium_line.position.z)
+            this.controlBox.position.copy(new Vector3(vectorx, 0, 0))
+        } else {
+            newPos = new Vector3(this.controlBox.position.x, this.medium_line.position.y, this.medium_line.position.z)
+        }
         this.medium_line.position.copy(newPos)
         this.update_css2_obj()
+        this.update_face_deep()
+        return (newPos.x + 100)
     }
     // 根据新中线更显 css2object的位置
     update_css2_obj() {
@@ -260,7 +310,7 @@ function createCSS2DText(text: string, position: Vector3) {
     const div = document.createElement('div');
     div.className = 'label';
     div.textContent = text;
-    div.style.color = 'block';
+    div.style.color = 'black';
     div.style.fontSize = '16px';
     div.style.position = 'absolute';
     const cssObject = new CSS2DObject(div);
