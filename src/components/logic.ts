@@ -1,7 +1,7 @@
 import { AxesHelper, Box3, BoxGeometry, BufferGeometry, Color, CylinderGeometry, DoubleSide, Group, Line, LineBasicMaterial, LineCurve3, LineDashedMaterial, Mesh, MeshBasicMaterial, RingGeometry, Scene, Shape, ShapeGeometry, Vector2, Vector3 } from "three"
 
 export const add_cylinder = (scene: Scene) => {
-    console.log("版权所有：nico");
+    console.log("版权所有：nico ");
     add_helper(scene)
     let group = new Group(), cylinderGroup = new Group()
     let radius = 40
@@ -30,7 +30,6 @@ export const add_cylinder = (scene: Scene) => {
     bottomMesh.rotation.x = Math.PI / 2;  // 上圆位置
     cylinderGroup.add(bottomMesh)
     cylinder.renderOrder = 2
-    // group.rotation.z = -Math.PI / 2
     const base = add_base()
     group.add(base)
     group.add(cylinderGroup)
@@ -162,6 +161,18 @@ function create_center_line(centerPoints: Vector3[]) {
     console.log(centerPoints);
     const curve = new LineCurve3(centerPoints[0], centerPoints[1])
     return curve
-
 }
 
+function add_medium_line(vectorx: number) {
+    const newVector3 = new Vector3(vectorx, 20, 0)
+    const newVector3_2 = new Vector3(vectorx, 20, 0).clone().add(new Vector3(0, 2, 0))
+    const geometry = new BufferGeometry().setFromPoints([newVector3, newVector3_2])
+    const line_material = new LineDashedMaterial({
+        color: 0x000000,
+        linewidth: 2,
+        dashSize: 3,
+        gapSize: 1
+    });
+    let midumline = new Line(geometry, line_material)
+    return midumline
+}

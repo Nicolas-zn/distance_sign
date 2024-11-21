@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { Scene, PerspectiveCamera, WebGLRenderer, DirectionalLight, AmbientLight, Color, BoxGeometry, LineCurve3, Mesh, MeshBasicMaterial, Vector3 } from 'three';
-import { OrbitControls, TransformControls } from 'three/examples/jsm/Addons.js';
+import { Scene, PerspectiveCamera, WebGLRenderer, DirectionalLight, AmbientLight, Color } from 'three';
+import { CSS2DRenderer, OrbitControls, TransformControls } from 'three/examples/jsm/Addons.js';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const three = ref()
+const renderer2D = new CSS2DRenderer();
+renderer2D.setSize(window.innerWidth, window.innerHeight);
 let scene: Scene,
   camera: PerspectiveCamera,
   renderer: WebGLRenderer,
@@ -31,6 +33,8 @@ let init_scene = async () => {
   // transformControl.size = 150
 
   transformControl.addEventListener('dragging-changed', function (event) {
+    console.log(event);
+
     controls.enabled = !event.value;
   });
   transformControl.setSize(0.5)
@@ -53,51 +57,32 @@ let init_scene = async () => {
   light.position.setScalar(1);
   scene.add(light, new AmbientLight(0xffffff, 0.75));
   // add_helper();
+  renderer2D.domElement.style.top = '0px'
+  renderer2D.domElement.style.left = '0px'
+  renderer2D.domElement.style.pointerEvents = 'none'
+  renderer2D.domElement.style.position = 'absolute'
+  three.value.appendChild(renderer2D.domElement)
 };
 onMounted(() => {
   init_scene()
   logic()
   render()
 })
-import { add_cylinder, sign_distance } from './logic';
+import Experience from './Experience';
 const logic = () => {
-  const { cylinderGroup, center_line } = add_cylinder(scene)
-  const line = sign_distance(cylinderGroup)
-  test(center_line)
-  scene.add(line)
-}
-const test = (curve: LineCurve3) => {
-  const start = curve.getPointAt(0)
-  console.log(start);
+  const experience = new Experience(scene)
+  transformControl.attach(experience.controlBox)
 
-  const end = curve.getPointAt(1)
-  const some_p = curve.getPointAt(0.4)
-  function addBox(p: Vector3) {
-    const boxG = new BoxGeometry(3, 3, 3)
-    const material = new MeshBasicMaterial({
-      color: 'red'
-    })
-    const mesh = new Mesh(boxG, material)
-    mesh.position.copy(p)
-    return mesh
-  }
-  scene.add(addBox(start))
-  scene.add(addBox(end))
-  let controlBox = addBox(some_p)
-  console.log('controlBox', controlBox);
-
-  scene.add(controlBox)
-  console.log(transformControl);
-
-  transformControl.attach(controlBox)
-
+  transformControl.addEventListener('change', function () {
+    experience.change_medium_line()
+  })
   scene.add(transformControl)
 }
-
 
 let rf: number;
 const render = () => {
   renderer.render(scene, camera);
+  renderer2D.render(scene, camera)
   rf = requestAnimationFrame(render);
 };
 onBeforeUnmount(() => {
@@ -113,4 +98,8 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.three-container {
+  position: relative;
+}
+</style>
