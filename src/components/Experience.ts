@@ -64,7 +64,7 @@ export default class Experience {
         bottomMesh.position.y = -height / 2;  // 下圆位置
         bottomMesh.rotation.x = Math.PI / 2;  // 上圆位置
         cylinderGroup.add(bottomMesh)
-        cylinder.renderOrder = 2
+        cylinder.renderOrder = 3
         const base = this.add_base()
         group.add(base)
         group.add(cylinderGroup)
@@ -176,6 +176,7 @@ export default class Experience {
         })
         const face = new Mesh(geometry, material)
         this.cut_face = face
+        this.cut_face.renderOrder = 2
         this.scene.add(face)
     }
     create_face_deep() {
@@ -195,7 +196,9 @@ export default class Experience {
             transparent: true, opacity: 0.5, color: new Color('rgb(255,0,234)'), side: DoubleSide
         })
         const face = new Mesh(geometry, material)
+        face.translateZ(0.1)
         this.cut_face_deep = face
+        this.cut_face_deep.renderOrder = 1
         this.scene.add(face)
     }
     update_face_deep() {
@@ -213,6 +216,7 @@ export default class Experience {
         this.cut_face_deep.geometry.dispose();  // 先清除旧的几何体数据
         const geometry = new ShapeGeometry(shape);  // 创建新的几何体
         this.cut_face_deep.geometry = geometry;  // 更新 Mesh 的几何体
+        // this.cut_face_deep.translateZ(0.1)
 
     }
     create_center_line() {
