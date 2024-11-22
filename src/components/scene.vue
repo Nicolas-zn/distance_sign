@@ -70,9 +70,108 @@ let init_scene = async () => {
   renderer2D.domElement.style.position = 'absolute'
   three.value.appendChild(renderer2D.domElement)
 };
+let chart_dom = ref()
+import * as echarts from 'echarts';
+let myChart: echarts.ECharts
+const load_echart = () => {
+  let domElement = chart_dom.value as HTMLDivElement
+  myChart = echarts.init(domElement);
+  type options = echarts.EChartsOption;
+
+  const y_data = [];
+  for (let i = 0; i < 200; i++) {
+    if (i < 100) {
+      y_data.push([i, 20]);
+
+    } else {
+      y_data.push([i, 15]);
+
+    }
+  }
+  let option: options = {
+    tooltip: {
+      trigger: 'axis',
+      formatter: function (params) {
+        return `
+            <div>
+                X坐标: ${params[0].axisValue}M<br/>
+                受力: ${params[0].value[1]}kN<br/>
+            </div>
+        `;
+      }
+    },
+    xAxis: {
+      // type: 'category',
+      boundaryGap: false,
+      show: true,
+      min: 0,
+      max: 200,
+      // data: x_data,
+      name: 'X坐标（M）',
+      nameLocation: 'middle',
+      nameTextStyle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333'
+      },
+      nameGap: 30
+    },
+    yAxis: {
+      type: 'value',
+      name: 'Fn(kN)',
+      show: true,
+      max: 20,
+      nameTextStyle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333'
+      },
+    },
+    series: [
+      {
+        data: y_data,
+        type: 'line',
+        lineStyle: {
+          color: '#5470C6',
+          width: 5,
+        },
+        step: 'start',
+        areaStyle: {
+          opacity: 0.2
+        },
+        symbol: 'none'
+      }
+    ]
+  };
+
+  option && myChart.setOption(option);
+  window.addEventListener("resize", function () {
+
+    myChart.resize();
+
+  });
+}
+const update_chart = () => {
+  const y_data = [];
+  for (let i = 0; i < 200; i++) {
+    if (i < slider_value.value) {
+      y_data.push([i, 20]);
+    } else {
+      y_data.push([i, 15]);
+    }
+  }
+  myChart.setOption({
+    series: [{
+      data: y_data,
+      animation: true,  // 启用动画过渡
+      animationDuration: 1000  // 动画持续时间，单位：毫秒
+    }]
+  })
+}
 onMounted(() => {
   init_scene()
   logic()
+  load_echart()
   render()
 })
 import Experience from './Experience';
@@ -83,6 +182,8 @@ const logic = () => {
   transformControl.addEventListener('change', function () {
     let number = experience.change_medium_line()
     slider_value.value = number
+    update_chart()
+
   })
   experience.cut_face.visible = show_cut_face.value
   experience.cut_face_deep.visible = show_cut_face.value
@@ -108,6 +209,7 @@ const change_cut_face = () => {
 }
 const slider_change = () => {
   experience.change_medium_line(slider_value.value)
+  update_chart()
 }
 </script>
 
@@ -128,7 +230,9 @@ const slider_change = () => {
           </div>
 
         </div>
-        <div class="echart-con">echart</div>
+        <div class="echart-con">
+          <div ref="chart_dom" class="chart_dom"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -178,5 +282,11 @@ const slider_change = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.chart_dom {
+  height: 80%;
+  width: 90%;
+  margin-left: 5%;
 }
 </style>
