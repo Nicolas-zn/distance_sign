@@ -246,6 +246,7 @@ export default class Experience {
             newPos = new Vector3(vectorx, this.medium_line.position.y, this.medium_line.position.z)
             this.controlBox.position.copy(new Vector3(vectorx, 0, 0))
         } else {
+            this.controlBox.position.x < -100 ? this.controlBox.position.x = -100 : ''
             newPos = new Vector3(this.controlBox.position.x, this.medium_line.position.y, this.medium_line.position.z)
         }
         this.medium_line.position.copy(newPos)
