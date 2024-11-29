@@ -202,7 +202,7 @@ onBeforeUnmount(() => {
 });
 
 
-let show_cut_face = ref(false), slider_value = ref(100)
+let show_cut_face = ref(true), slider_value = ref(100)
 const change_cut_face = () => {
   experience.cut_face.visible = show_cut_face.value
   experience.cut_face_deep.visible = show_cut_face.value
